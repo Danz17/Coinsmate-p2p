@@ -41,7 +41,17 @@ export default function CoinsmateLiquidityTracker() {
     const rows = transactions.map(tx => [
       tx.type, tx.platform, tx.amount, tx.rate, tx.valuePHP.toFixed(2), tx.bank, tx.owner, tx.note || "", tx.timestamp.toLocaleString(), tx.type === 'sell' ? ((tx.rate - averageRate) * tx.amount).toFixed(2) : ""
     ]);
-    const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
+    const csv = [headers, ...rows]
+      .map(row =>
+        row
+          .map(value =>
+            typeof value === "string" && value.includes(",")
+              ? `"${value}"`
+              : value
+          )
+          .join(",")
+      )
+      .join("\n");
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
