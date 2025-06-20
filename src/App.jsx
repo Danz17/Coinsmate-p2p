@@ -27,8 +27,10 @@ export default function CoinsmateLiquidityTracker() {
     setForm({ platform: "", amount: "", rate: "", bank: "", owner: "", note: "" });
   };
 
+  // group transactions by local date to avoid timezone shifts when using
+  // `toISOString()`, which converts to UTC and can change the day
   const groupedPnL = transactions.reduce((acc, tx) => {
-    const date = tx.timestamp.toISOString().split("T")[0];
+    const date = tx.timestamp.toLocaleDateString('en-CA');
     const pnl = tx.type === "sell" ? (tx.rate - averageRate) * tx.amount : 0;
     acc[date] = (acc[date] || 0) + pnl;
     return acc;
@@ -129,7 +131,14 @@ export default function CoinsmateLiquidityTracker() {
             </>
           ) : (
             <>
-              <input type="number" placeholder="New Average Rate" onChange={e => setAverageRate(parseFloat(e.target.value))} />
+              <input
+                type="number"
+                placeholder="New Average Rate"
+                onChange={e => {
+                  const val = parseFloat(e.target.value);
+                  if (!isNaN(val)) setAverageRate(val);
+                }}
+              />
               <p>Balances adjusted manually here</p>
             </>
           )}
